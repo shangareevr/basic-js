@@ -19,72 +19,54 @@ const { NotImplementedError } = require('../extensions/index.js');
  * reverseMachine.decrypt('AEIHQX SX DLLU!', 'alphonse') => '!NWAD TA KCATTA'
  * 
  */
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 class VigenereCipheringMachine {
   constructor(algorithm = true) {
     this.algorithm = algorithm
-    return this.algorithm
   }
+
   encrypt(message, key) {
-    // проверка входных данный
     if (!message || !key) {
       throw new Error ("Incorrect arguments!");
     }
+
+    const alphabet = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
     message = message.toUpperCase();
     key = key.toUpperCase();
-    let charNum = 0;
     let res = [];
-    // перебираем символы из входных данных
-    for (let i = 0; i <message.length; i++) {
-      // проверяем есть ли в алфавите этот символ
+    let charNum = 0;
+    for (let i = 0; i < message.length; i++) {
+      const keyChar = key[charNum % key.length];
+      const shift = alphabet.indexOf(keyChar);
       if (alphabet.includes(message[i])) {
-        // если есть надо кодировать
-        let index = ((alphabet.indexOf(message[i])+alphabet.indexOf(key[charNum]))%26);
+        let index = (alphabet.indexOf(message[i]) + shift) % alphabet.length;
         res.push(alphabet[index]);
         charNum++;
-        if (charNum === (key.length)) {
-          charNum = 0;
-        }
       } else {
-        res.push(message[i])
+        res.push(message[i]);
       }
-      
     }
-    return res.join('');
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+    return this.algorithm ? res.join('') : res.reverse().join('');
   }
+
   decrypt(message, key) {
     if (!message || !key) {
       throw new Error ("Incorrect arguments!");
     }
-    message = message.toUpperCase();
+
+    const alphabet = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
     key = key.toUpperCase();
-    let charNum = 0;
-    let res = [];
-    if (!this.algorithm) {
-      message = message.split('')
-    }
-    for (let i = 0; i <message.length; i++) {
-      // проверяем есть ли в алфавите этот символ
-      if (alphabet.includes(message[i])) {
-        // если есть надо кодировать
-        let index = ((alphabet.indexOf(message[i])-alphabet.indexOf(key[charNum])+26)%26);
-        charNum++;
-        res.push(alphabet[index]);
-        
-        if (charNum === (key.length)) {
-          charNum = 0;
-        }
-        
-      } else {
-        res.push(message[i])
-      }
-      
-    }
-    return res.join('');
+    key = Array.from(key)
+      .map((char) => {
+        let shift = alphabet.indexOf(char);
+        return alphabet[(alphabet.length - shift) % alphabet.length];
+      })
+      .join('');
+
+    return this.encrypt(message, key);
   }
 }
+
 module.exports = {
-  VigenereCipheringMachine
+  VigenereCipheringMachine,
 };
